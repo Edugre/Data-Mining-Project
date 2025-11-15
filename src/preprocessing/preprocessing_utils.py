@@ -1,45 +1,21 @@
 import pandas as pd
 
-def load_transactions(csv_path) -> list[dict]:
-    transactions = []
-
+def load_transactions(csv_path):
     df = pd.read_csv(csv_path)
 
-    for index, row in df.iterrows():
-        transaction_id = row["transaction_id"]
-        items_string = row["items"]
+    df['items'] = df['items'].fillna('').str.split(',')
 
-        if pd.isna(items_string):
-            items_list = []
-        else:
-            items_list = items_string.split(",")
+    return df.to_dict('records')
 
-        transactions.append({
-            "transaction_id": transaction_id,
-            "items": items_list
-        })
-
-    return transactions
-
-def load_products_set(csv_path) -> set:
-    products = set()
-
+def load_products_set(csv_path):
     df = pd.read_csv(csv_path)
 
-    for index, row in df.iterrows():
-        products.add(row["product_name"].strip().lower())
+    return set(df['product_name'].str.strip().str.lower())
 
-    return products
+def standardize_items(items):
+    return [item.strip().lower() for item in items]
 
-def standardize_items(items) -> list[str]:
-    new_items =[]
-
-    for item in items:
-        new_items.append(item.strip().lower())
-
-    return new_items
-
-def remove_duplicates(items) -> tuple[list[str], int]:
+def remove_duplicates(items):
     new_items = []
     duplicates_set = set()
     duplicates_count = 0
@@ -53,7 +29,7 @@ def remove_duplicates(items) -> tuple[list[str], int]:
     
     return new_items, duplicates_count
 
-def remove_invalid(items, products_set) -> tuple[list[str], int]:
+def remove_invalid(items, products_set):
     new_items = []
     invalid_count = 0
 
@@ -66,7 +42,7 @@ def remove_invalid(items, products_set) -> tuple[list[str], int]:
     return new_items, invalid_count
 
 
-def clean_transaction(items, products_set) -> tuple[list, dict, set]:
+def clean_transaction(items, products_set):
     stats = {}
     new_items = standardize_items(items)
     new_items, duplicates_count = remove_duplicates(new_items)
@@ -77,8 +53,8 @@ def clean_transaction(items, products_set) -> tuple[list, dict, set]:
 
     return new_items, stats, set(new_items)
 
-def preprocess_transactions(transactions, products) -> tuple[list, dict]:
-    new_transactions = []
+def preprocess_transactions(transactions, products):
+    processed_transactions = []
     uniques_set = set()
 
     stats = {
@@ -95,21 +71,21 @@ def preprocess_transactions(transactions, products) -> tuple[list, dict]:
         new_transaction, transaction_stats, unique_items = clean_transaction(transaction["items"], products)
 
         if len(new_transaction) <= 0:
-            stats["empty"] = stats["empty"] + 1
+            stats["empty"] += 1
         elif len(new_transaction) == 1:
-            stats["single"] = stats["single"] + 1
+            stats["single"] += 1
         else:
-            new_transactions.append({"transaction_id": transaction["transaction_id"], "items": new_transaction})
-            stats["total_items"] = stats["total_items"] + len(new_transaction)
-            uniques_set = uniques_set.union(set(unique_items))
+            processed_transactions.append({"transaction_id": transaction["transaction_id"], "items": new_transaction})
+            stats["total_items"] += len(new_transaction)
+            uniques_set |= unique_items
 
-        stats["duplicates"] = stats["duplicates"] + transaction_stats["duplicates"]
-        stats["invalid"] = stats["invalid"] + transaction_stats["invalid"] 
+        stats["duplicates"] += transaction_stats["duplicates"]
+        stats["invalid"] += transaction_stats["invalid"] 
     
     stats["uniques"] = len(uniques_set)
-    stats["valid_transactions"] = len(new_transactions)
+    stats["valid_transactions"] = len(processed_transactions)
 
-    return new_transactions, stats
+    return processed_transactions, stats
 
 def save_to_csv(transactions, path):
     df = pd.DataFrame(transactions)
