@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 # Resolve project root (frontend -> src -> project)
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -59,30 +60,47 @@ html, body, [class*="css"] {
     border: 1px solid #e3e5e8;
     box-shadow: 0 4px 12px rgba(19,25,33,0.08);
     margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
 }
 .product-card h4 {
     margin-bottom: 0.25rem;
     color: var(--amazon-blue);
 }
-.product-card p {
+.product-card img {
+    width: 100%;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+.product-card .card-helper {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: #6b6f77;
 }
-.cart-panel {
+.cart-summary {
     background: var(--panel-bg);
-    border-radius: 14px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(19,25,33,0.08);
+    border-radius: 12px;
+    padding: 0.6rem 0.9rem;
+    box-shadow: 0 3px 8px rgba(19,25,33,0.12);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--amazon-blue);
 }
 .cart-item {
-    padding: 0.35rem 0.5rem;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 0.6rem 0.85rem;
+    border-radius: 12px;
+    background: var(--panel-bg);
     color: #131921;
     font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    margin-bottom: 0.45rem;
 }
-.cart-item:last-child {
-    border-bottom: none;
+.cart-divider {
+    border-top: 1px solid #ececec;
+    margin: 0.6rem 0;
 }
 .stats-card {
     background: var(--panel-bg);
@@ -180,6 +198,44 @@ PRODUCTS = [
     "Orange Juice",
 ]
 
+PRODUCT_IMAGE_TAGS = {
+    "Milk": "milk",
+    "Bread": "fresh bread",
+    "Eggs": "eggs",
+    "Butter": "butter",
+    "Cheese": "cheese",
+    "Yogurt": "yogurt",
+    "Chicken": "raw chicken",
+    "Beef": "steak",
+    "Apples": "apples",
+    "Bananas": "bananas",
+    "Tomatoes": "tomatoes",
+    "Lettuce": "lettuce",
+    "Rice": "rice grains",
+    "Pasta": "pasta",
+    "Coffee": "coffee beans",
+    "Tea": "tea cup",
+    "Sugar": "sugar",
+    "Salt": "salt shaker",
+    "Cooking Oil": "cooking oil",
+    "Orange Juice": "orange juice",
+}
+
+FALLBACK_IMAGE_TAG = "grocery store"
+
+
+def get_product_image(product_name):
+    tag = PRODUCT_IMAGE_TAGS.get(product_name, FALLBACK_IMAGE_TAG)
+    formatted = tag.lower().replace(" ", ",")
+    slug = quote(formatted, safe=",")
+    return f"https://loremflickr.com/320/240/{slug}"
+
+
+def invalidate_cleaned_results():
+    """Clear cleaned data if manual/imported transactions change."""
+    st.session_state.cleaned_transactions = []
+    st.session_state.preprocessing_stats = None
+
 
 def normalize_transactions(records):
     """Ensure each transaction dict has clean ids and item lists."""
@@ -253,8 +309,14 @@ def render_stats_card(value, label, helper=""):
     )
 
 
-def get_all_transactions():
+def get_raw_transactions():
     return st.session_state.transactions + st.session_state.imported_transactions
+
+
+def get_display_transactions():
+    if st.session_state.cleaned_transactions:
+        return st.session_state.cleaned_transactions
+    return get_raw_transactions()
 
 
 def display_action_message():
@@ -271,30 +333,35 @@ def render_shopping_page():
 
     with col_products:
         st.markdown("#### Featured products")
-        product_columns = st.columns(4)
-
-        for idx, product in enumerate(PRODUCTS):
-            with product_columns[idx % 4]:
-                st.markdown(
-                    f"""
-                    <div class="product-card">
-                        <h4>{product}</h4>
-                        <p>Popular pick with Prime shoppers.</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if st.button("Add to cart", key=f"product_{idx}", use_container_width=True):
-                    st.session_state.current_cart.append(product)
-                    st.session_state.action_message = f"{product} added to cart."
+        items_per_row = 4
+        for start_idx in range(0, len(PRODUCTS), items_per_row):
+            row_cols = st.columns(items_per_row)
+            for offset in range(items_per_row):
+                idx = start_idx + offset
+                if idx >= len(PRODUCTS):
+                    continue
+                product = PRODUCTS[idx]
+                with row_cols[offset]:
+                    st.markdown(
+                        f"""
+                        <div class="product-card">
+                            <img src="{get_product_image(product)}" alt="{product}" />
+                            <h4>{product}</h4>
+                            <p class="card-helper">Add this item to the current cart.</p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                    if st.button("Add to cart", key=f"product_{idx}", use_container_width=True):
+                        st.session_state.current_cart.append(product)
+                        st.session_state.action_message = f"{product} added to cart."
 
     with col_cart:
         st.markdown("#### Current cart")
-        st.markdown("<div class='cart-panel'>", unsafe_allow_html=True)
 
         if st.session_state.current_cart:
             st.markdown(
-                f"<p><strong>{len(st.session_state.current_cart)}</strong> item(s) selected.</p>",
+                f"<div class='cart-summary'><span>{len(st.session_state.current_cart)} item(s)</span> selected</div>",
                 unsafe_allow_html=True,
             )
 
@@ -307,6 +374,8 @@ def render_shopping_page():
                     st.session_state.action_message = f"{item} removed from cart."
                     break
 
+            st.markdown("<div class='cart-divider'></div>", unsafe_allow_html=True)
+
             action_cols = st.columns(2)
             if action_cols[0].button("Complete transaction", use_container_width=True):
                 transaction_id = f"M{st.session_state.transaction_counter:03d}"
@@ -314,6 +383,7 @@ def render_shopping_page():
                 st.session_state.transactions.append(
                     {"transaction_id": transaction_id, "items": st.session_state.current_cart.copy()}
                 )
+                invalidate_cleaned_results()
                 st.session_state.current_cart = []
                 st.session_state.action_message = f"Transaction {transaction_id} saved."
 
@@ -322,8 +392,6 @@ def render_shopping_page():
                 st.session_state.action_message = "Cart cleared."
         else:
             st.info("Start building a cart by clicking any product card.")
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
     display_action_message()
 
@@ -373,13 +441,14 @@ def render_data_import_page():
                     imported_data = normalize_transactions(df.to_dict("records"))
 
                     st.success(f"Parsed {len(imported_data)} transactions from the uploaded file.")
-                    preview_df = df.head(10).copy()
+                    preview_df = df.copy()
                     preview_df["items"] = preview_df["items"].apply(lambda lst: ", ".join(lst))
                     st.markdown("##### Preview")
                     st.dataframe(preview_df, hide_index=True, use_container_width=True)
 
                     if st.button("Add to current transactions", use_container_width=True):
                         st.session_state.imported_transactions = imported_data
+                        invalidate_cleaned_results()
                         st.session_state.action_message = f"{len(imported_data)} imported transactions added."
 
     with col_sample:
@@ -396,6 +465,7 @@ def render_data_import_page():
             else:
                 normalized = normalize_transactions(sample_records)
                 st.session_state.imported_transactions = normalized
+                invalidate_cleaned_results()
                 st.session_state.action_message = (
                     f"Loaded {len(normalized)} transactions from sample_transactions.csv."
                 )
@@ -421,10 +491,15 @@ def render_data_import_page():
 def render_transactions_page():
     st.header("Transaction overview")
 
-    combined = get_all_transactions()
+    combined = get_display_transactions()
     if not combined:
         st.info("No transactions available yet. Create a cart or import a CSV file first.")
         return
+
+    if st.session_state.cleaned_transactions:
+        st.caption("Displaying the cleaned dataset produced by the latest preprocessing run.")
+    else:
+        st.caption("Displaying the current manual + imported transactions.")
 
     stats = transaction_stats(combined)
     manual_count = len(st.session_state.transactions)
@@ -432,7 +507,8 @@ def render_transactions_page():
 
     stat_cols = st.columns(4)
     with stat_cols[0]:
-        render_stats_card(stats["total"], "Total transactions", "Manual + imported")
+        dataset_label = "Cleaned dataset" if st.session_state.cleaned_transactions else "Manual + imported"
+        render_stats_card(stats["total"], "Total transactions", dataset_label)
     with stat_cols[1]:
         render_stats_card(stats["total_items"], "Total items", f"{stats['unique_items']} unique products")
     with stat_cols[2]:
@@ -449,8 +525,8 @@ def render_transactions_page():
 def render_preprocessing_page():
     st.header("Data preprocessing")
 
-    combined = get_all_transactions()
-    if not combined:
+    raw_transactions = get_raw_transactions()
+    if not raw_transactions:
         st.warning("Add manual transactions or import CSV data before running preprocessing.")
         return
 
@@ -470,7 +546,7 @@ def render_preprocessing_page():
 
     if st.button("Run preprocessing", use_container_width=True):
         with st.spinner("Cleaning transactions..."):
-            cleaned_transactions, stats = preprocess_transactions(combined, products_set)
+            cleaned_transactions, stats = preprocess_transactions(raw_transactions, products_set)
             st.session_state.preprocessing_stats = stats
             st.session_state.cleaned_transactions = cleaned_transactions
 
@@ -507,7 +583,8 @@ def render_preprocessing_page():
         if st.session_state.cleaned_transactions:
             st.markdown("##### Cleaned transactions preview")
             cleaned_df = build_transactions_dataframe(st.session_state.cleaned_transactions)
-            st.dataframe(cleaned_df.head(20), hide_index=True, use_container_width=True)
+            st.dataframe(cleaned_df, hide_index=True, use_container_width=True)
+            st.info("The View Transactions page now displays these cleaned totals and rows.")
 
     display_action_message()
 
