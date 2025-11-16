@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 from pathlib import Path
+from association_rules import generate_rules
 
 # Add project root to Python path
 project_root = Path(__file__).parent.parent.parent
@@ -8,7 +9,7 @@ sys.path.insert(0, str(project_root))
 
 from src.preprocessing.preprocessing_utils import load_transactions
 
-transaction_path = "data/cleaned_transactions.csv"
+transaction_path = project_root / "data" / "cleaned_transactions.csv"
 
 # Extract the lists of items from the transactions dictionary 
 def get_items_list(transactions):
@@ -102,9 +103,9 @@ def main():
 
     frequency_list = apriori(items_list)
 
-    print(frequency_list)
+    rules = generate_rules(frequency_list)
 
-
+    print(rules)
 
 if __name__ == "__main__":
     main()
