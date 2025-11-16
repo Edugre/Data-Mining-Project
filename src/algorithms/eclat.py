@@ -1,13 +1,13 @@
 import pandas as pd
 import sys
 from pathlib import Path
-from association_rules import generate_rules
 
 # Add project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.preprocessing.preprocessing_utils import load_transactions
+from .association_rules import generate_rules
 
 transaction_path = project_root / "data" / "cleaned_transactions.csv"
 
