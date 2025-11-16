@@ -854,7 +854,7 @@ def render_mining_page():
             label_visibility="collapsed"
         )
     with col_clear:
-        if st.button("Clear", key="clear_search", use_container_width=True):
+        if st.button("Clear", key="clear_search", use_container_width=True, type="primary"):
             search_query = ""
             st.session_state.selected_product = None
 
