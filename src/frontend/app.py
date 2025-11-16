@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import sys
 from pathlib import Path
-from urllib.parse import quote
 
 # Resolve project root (frontend -> src -> project)
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -70,9 +69,10 @@ html, body, [class*="css"] {
 }
 .product-card img {
     width: 100%;
-    height: 120px;
+    aspect-ratio: 4 / 3;
     border-radius: 12px;
     object-fit: cover;
+    display: block;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 .product-card .card-helper {
@@ -198,37 +198,34 @@ PRODUCTS = [
     "Orange Juice",
 ]
 
-PRODUCT_IMAGE_TAGS = {
-    "Milk": "milk",
-    "Bread": "fresh bread",
-    "Eggs": "eggs",
-    "Butter": "butter",
-    "Cheese": "cheese",
-    "Yogurt": "yogurt",
-    "Chicken": "raw chicken",
-    "Beef": "steak",
-    "Apples": "apples",
-    "Bananas": "bananas",
-    "Tomatoes": "tomatoes",
-    "Lettuce": "lettuce",
-    "Rice": "rice grains",
-    "Pasta": "pasta",
-    "Coffee": "coffee beans",
-    "Tea": "tea cup",
-    "Sugar": "sugar",
-    "Salt": "salt shaker",
-    "Cooking Oil": "cooking oil",
-    "Orange Juice": "orange juice",
+PRODUCT_IMAGE_URLS = {
+    "Milk": "https://i.imgur.com/i6GJnFY.jpeg",
+    "Bread": "https://i.imgur.com/CwUTmM5.jpeg",
+    "Eggs": "https://i.imgur.com/ElwxpIx.jpeg",
+    "Butter": "https://i.imgur.com/gru3MXU.jpeg",
+    "Cheese": "https://i.imgur.com/CNotm0n.jpeg",
+    "Yogurt": "https://i.imgur.com/BYYp7iI.jpeg",
+    "Chicken": "https://i.imgur.com/VdSkKTA.jpeg",
+    "Beef": "https://i.imgur.com/y90fE33.jpeg",
+    "Apples": "https://i.imgur.com/5j0P2ad.jpeg",
+    "Bananas": "https://i.imgur.com/mVg0yTq.jpeg",
+    "Tomatoes": "https://i.imgur.com/BZG2Hhu.jpeg",
+    "Lettuce": "https://i.imgur.com/q7QvsHd.jpeg",
+    "Rice": "https://i.imgur.com/YDlqOBp.jpeg",
+    "Pasta": "https://i.imgur.com/gJpU8NT.jpeg",
+    "Coffee": "https://i.imgur.com/Gkshypq.jpeg",
+    "Tea": "https://i.imgur.com/UzhS4dj.jpeg",
+    "Sugar": "https://i.imgur.com/RUtw6z1.jpeg",
+    "Salt": "https://i.imgur.com/RUtw6z1.jpeg",
+    "Cooking Oil": "https://i.imgur.com/TLNwBwH.jpeg",
+    "Orange Juice": "https://i.imgur.com/XZ8CcEh.jpeg",
 }
 
-FALLBACK_IMAGE_TAG = "grocery store"
+FALLBACK_IMAGE_URL = "https://i.imgur.com/yourFallbackImage.jpg"
 
 
 def get_product_image(product_name):
-    tag = PRODUCT_IMAGE_TAGS.get(product_name, FALLBACK_IMAGE_TAG)
-    formatted = tag.lower().replace(" ", ",")
-    slug = quote(formatted, safe=",")
-    return f"https://loremflickr.com/320/240/{slug}"
+    return PRODUCT_IMAGE_URLS.get(product_name, FALLBACK_IMAGE_URL)
 
 
 def invalidate_cleaned_results():
