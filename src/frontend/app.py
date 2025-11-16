@@ -578,9 +578,19 @@ def render_preprocessing_page():
             st.metric("Transactions removed", f"{removed} ({pct_removed:.1f}%)")
 
         if st.session_state.cleaned_transactions:
-            st.markdown("##### Cleaned transactions preview")
+            st.markdown("##### Transactions before and after cleaning")
+            preview_cols = st.columns(2)
+            before_df = build_transactions_dataframe(raw_transactions)
             cleaned_df = build_transactions_dataframe(st.session_state.cleaned_transactions)
-            st.dataframe(cleaned_df, hide_index=True, use_container_width=True)
+
+            with preview_cols[0]:
+                st.markdown("###### Before preprocessing")
+                st.dataframe(before_df, hide_index=True, use_container_width=True)
+
+            with preview_cols[1]:
+                st.markdown("###### After preprocessing")
+                st.dataframe(cleaned_df, hide_index=True, use_container_width=True)
+
             st.info("The View Transactions page now displays these cleaned totals and rows.")
 
     display_action_message()
