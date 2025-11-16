@@ -142,6 +142,8 @@ html, body, [class*="css"] {
     padding: 0.45rem 1rem;
     background: var(--amazon-orange);
     color: #131921;
+    white-space: nowrap;
+    word-break: keep-all;
 }
 .stButton>button:hover {
     background: #e38c04;
@@ -363,7 +365,7 @@ def render_shopping_page():
             )
 
             for idx, item in enumerate(st.session_state.current_cart):
-                item_cols = st.columns([4, 1])
+                item_cols = st.columns([3, 1])
 
                 item_cols[0].markdown(f"<div class='cart-item'>{item}</div>", unsafe_allow_html=True)
                 if item_cols[1].button("Remove", key=f"remove_{idx}", use_container_width=True):
