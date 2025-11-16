@@ -28,7 +28,7 @@ def build_vertical_format(transactions):
 def eclat_recursive(prefix, items, total_transactions, results, min_support=0.2):
     while items:
         item, tidset = items.pop()
-        new_itemset = prefix.union([item])
+        new_itemset = prefix.union({item})
         support = len(tidset) / total_transactions
 
         if support >= min_support:
