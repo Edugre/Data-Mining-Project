@@ -216,7 +216,7 @@ PRODUCT_IMAGE_URLS = {
     "Coffee": "https://i.imgur.com/Gkshypq.jpeg",
     "Tea": "https://i.imgur.com/UzhS4dj.jpeg",
     "Sugar": "https://i.imgur.com/RUtw6z1.jpeg",
-    "Salt": "https://i.imgur.com/RUtw6z1.jpeg",
+    "Salt": "https://i.imgur.com/z6Y3dYj.jpeg",
     "Cooking Oil": "https://i.imgur.com/TLNwBwH.jpeg",
     "Orange Juice": "https://i.imgur.com/XZ8CcEh.jpeg",
 }
