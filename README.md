@@ -9,7 +9,7 @@
 
 3. **Name**: Iván Salazar  
 - **Student ID**: 6237206  
-<br>
+
 - **Course**: CAI 4002 - Artificial Intelligence  
 - **Semester**: Fall 2025  
 
