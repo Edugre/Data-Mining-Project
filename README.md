@@ -1,6 +1,9 @@
 ### Interactive Supermarket Simulation with Association Rule Mining
 
 #### Authors Information
+- **Course**: CAI 4002 - Artificial Intelligence  
+- **Semester**: Fall 2025
+  
 1. **Name**: Eduardo Goncalvez 
 - **Student ID**: 6526311  
 
@@ -9,9 +12,6 @@
 
 3. **Name**: Iván Salazar  
 - **Student ID**: 6237206  
-
-- **Course**: CAI 4002 - Artificial Intelligence  
-- **Semester**: Fall 2025  
 
 ---
 
