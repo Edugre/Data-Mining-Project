@@ -3,10 +3,10 @@
 #### Authors Information
 1. **Name**: Eduardo Goncalvez 
 - **Student ID**: 6526311  
-<br>
+
 2. **Name**: Alex Waisman 
 - **Student ID**: 6529880  
-<br>
+
 3. **Name**: Iván Salazar  
 - **Student ID**: 6237206  
 <br>
