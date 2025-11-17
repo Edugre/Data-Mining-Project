@@ -1,175 +1,218 @@
 ### Interactive Supermarket Simulation with Association Rule Mining
 
-#### Author Information
+#### Authors Information
+1. **Name**: Eduardo Goncalvez 
+- **Student ID**: 6526311  
+<br>
+2. **Name**: Alex Waisman 
+- **Student ID**: 6529880  
+<br>
+3. **Name**: Iván Salazar  
+- **Student ID**: 6237206  
+<br>
+- **Course**: CAI 4002 - Artificial Intelligence  
+- **Semester**: Fall 2025  
 
-- **Name**: [Your Full Name]
-- **Student ID**: [Your ID]
-- **Course**: CAI 4002 - Artificial Intelligence
-- **Semester**: [Fall/Spring Year]
+---
 
+### System Overview
 
+This project is an interactive supermarket shopping simulator combined with data preprocessing and association rule mining.  
+Users create or import transactions, clean the dataset, and run Apriori, Eclat, and Association Rule Generation to discover product relationships and recommendations.
 
-#### System Overview
+The full application is built as a modern interactive web app using Streamlit.
 
-[2-3 sentences describing what your application does]
+---
 
+### Technical Stack
 
+- Language: Python 3.10+
+- Main Libraries:
+  - `pandas` (data handling)
+  - `streamlit` (UI)
+  - Custom implementations of:
+    - Apriori
+    - Eclat
+    - Association Rule Generator
+- UI Framework: Streamlit
 
-#### Technical Stack
+---
 
-- **Language**: [Python 3.x / JavaScript / Java]
-- **Key Libraries**: [List main dependencies]
-- **UI Framework**: [If applicable]
+### Installation
 
+#### Prerequisites
+- Python 3.10 or higher
 
-
-#### Installation
-
-##### Prerequisites
-- [e.g., Python 3.8+, Node.js 14+, Java 11+]
-- [Other requirements]
-
-##### Setup
+#### Setup
 ```bash
-# Clone or extract project
-cd [project-directory]
+# Move into project directory
+cd assignment_data_mining
 
 # Install dependencies
-[command to install dependencies]
+pip install -r requirements.txt
 
-# Run application
-[command to start application]
+# Run the application
+streamlit run src/frontend/app.py
 ```
 
+---
 
+### Usage
 
-#### Usage
+#### 1. Load Data
+- Manual Entry: Click product cards to add them to your cart and complete transactions in the `Shopping` tab.
+- Import CSV: Upload an external csv or load sample data in the `Data Import` tab.
+- View all the transactions in the dataset in the `View Transactions` tab.
 
-##### 1. Load Data
-- **Manual Entry**: Click items to create transactions
-- **Import CSV**: Use "Import" button to load `sample_transactions.csv`
+#### 2. Preprocess Data
+- In the `Data Preprocessing` tab:
+    - Click the `🚀 Run Preprocessing` button to use our preprocessing functions.
+    - This will:
+        - Delete empty transactions.
+        - Delete transactions with a single item.
+        - Remove duplicate items.
+        - Remove items not found in `products.csv`.
+        - Standardize item names (lowercase + trimmed).
+    - You will be able to see a report & after comparison of the proccessed data. 
+    - You can apply the cleaned in the webapp dataset by clicking the `Apply Cleaned Transactions` button.
 
-##### 2. Preprocess Data
-- Click "Run Preprocessing"
-- Review cleaning report (empty transactions, duplicates, etc.)
+#### 3. Run Mining
+- In the `Association Rules Mining` tab:
+    - Set minimum support and minimum confidence.
+    - Click the `🚀 Run Mining Algorithms` button to run the Apriori and Eclat algorithms in the current dataset.
+    - After running both algorithms the app will display a performance comparison with running times, used memory, and number of rules generated.
 
-##### 3. Run Mining
-- Set minimum support and confidence thresholds
-- Click "Analyze" to execute all three algorithms
-- Wait for completion (~1-3 seconds)
+#### 4. Query Results
+- In the `Association Rules Mining` tab you will be able to select a product under our `🎯 Product Recommendation System`.
+- Select a product from the dropdown menu, products with significant associations will contain a checkmark (✓) next to them. 
+- Products with significant associations will display associated items and their recommendation strength. 
+- Optional: View technical details (raw rules, performance metrics) under our `View All Association Rules` tab and by marking the `Show technical details` checkbox.
 
-##### 4. Query Results
-- Select product from dropdown
-- View associated items and recommendation strength
-- Optional: View technical details (raw rules, performance metrics)
+---
 
+### Algorithm Implementation
 
+#### Apriori
+Apriori finds frequent itemsets by exploring them level by level, starting from single items and expanding upward. At each step, it joins frequent (k-1)-itemsets to form candidate k-itemsets, counts their support in the dataset, and removes those that don’t meet the minimum support threshold. This iterative process continues until no more frequent itemsets can be generated.
 
-#### Algorithm Implementation
+- Data structure: Dictionary of frozensets mapping itemsets to their support values
+- Candidate generation: Breadth-first, level-wise approach where candidates of size k are generated by joining frequent itemsets of size k-1
+- Pruning strategy: Minimum support threshold—itemsets with support below min_support are discarded after each level
 
-##### Apriori
-[2-3 sentences on your implementation approach]
-- Data structure: [e.g., dictionary of itemsets]
-- Candidate generation: [breadth-first, level-wise]
-- Pruning strategy: [minimum support]
+#### Eclat
+The Eclat algorithm uses a vertical format where each item is represented by the set of transaction IDs that contain it, allowing support to be computed through simple set intersections. It expands itemsets using a depth-first search, recursively intersecting TID-sets to generate larger frequent itemsets without rescanning the entire database. This approach makes Eclat especially efficient on dense datasets where many items commonly co-occur.
 
-##### Eclat
-[2-3 sentences on your implementation approach]
-- Data structure: [e.g., TID-set representation]
-- Search strategy: [depth-first]
-- Intersection method: [set operations]
+- Data structure: TID-set representation using dictionaries mapping items to sets of transaction IDs
+- Search strategy: Depth-first recursive exploration of the itemset search space
+- Intersection method: Set intersection operations on TID-sets to compute support and generate new itemsets
 
-##### CLOSET
-[2-3 sentences on your implementation approach]
-- Data structure: [e.g., FP-tree / prefix tree]
-- Mining approach: [closed itemsets only]
-- Closure checking: [method used]
+#### Association Rule Generation
+- For each frequent itemset:
+  - Generates subsets  
+  - Computes:
+    - Support  
+    - Confidence  
+    - Lift  
+- Keeps rules meeting the minimum confidence threshold.
 
+---
 
+### Performance Results
 
-#### Performance Results
-
-Tested on provided dataset (80-100 transactions after cleaning):
+Tested using the cleaned sample dataset (~80–100 transactions):
 
 | Algorithm | Runtime (ms) | Rules Generated | Memory Usage |
-|-----------|--------------|-----------------|--------------|
-| Apriori   | [value]      | [value]         | [value]      |
-| Eclat     | [value]      | [value]         | [value]      |
-| CLOSET    | [value]      | [value]         | [value]      |
+|-----------|--------------|-------------------|-----------------|
+| Apriori   | ~1.55 ms    | 11            | 0.008 MB        |
+| Eclat     | ~0.55 ms    | 11            | 0.011 MB        |
 
-**Parameters**: min_support = 0.2, min_confidence = 0.5
+**Parameters used**:  
+`min_support = 0.2`  
+`min_confidence = 0.5`
 
-**Analysis**: [1-2 sentences explaining performance differences]
+---
 
-
-
-#### Project Structure
+### Project Structure
 
 ```
 project-root/
 ├── src/
 │   ├── algorithms/
-│   │   ├── apriori.[py/js/java]
-│   │   ├── eclat.[py/js/java]
-│   │   └── closet.[py/js/java]
+│   │   ├── apriori.py
+│   │   ├── eclat.py
+│   │   ├── performance_comparison.py
+│   │   └── association_rules.py
 │   ├── preprocessing/
-│   │   └── cleaner.[py/js/java]
-│   ├── ui/
-│   │   └── [interface files]
-│   └── main.[py/js/java]
+│   │   └── preprocessing_utils.py
+│   └── frontend/
+│       ├── components/
+│       │    ├── data_import.py
+│       │    ├── home.py
+│       │    ├── mining.py
+│       │    ├── preprocessing.py
+│       │    ├── shopping.py
+│       │    └── transactions.py
+│       └── app.py
 ├── data/
 │   ├── sample_transactions.csv
-│   └── products.csv
+│   ├── products.csv
+│   └── cleaned_transactions.csv
 ├── README.md
-├── REPORT.pdf
-└── [requirements.txt / package.json / pom.xml]
+├── .gitignore
+├── requirements.txt
+└── REPORT.pdf
 ```
 
+---
 
-
-#### Data Preprocessing
+### Data Preprocessing
 
 Issues handled:
-- Empty transactions: [count] removed
-- Single-item transactions: [count] removed
-- Duplicate items: [count] instances cleaned
-- Case inconsistencies: [count] standardized
-- Invalid items: [count] removed
+- Empty transactions: 5 removed
+- Single-item transactions: 6 removed
+- Duplicate items: 9 instances cleaned
+- Case inconsistencies: Entire dataset standardized
+- Invalid items: 7 instances removed
 - Extra whitespace: trimmed from all items
 
+---
 
+### Testing
 
-#### Testing
+**Verified functionality**
+- [x] CSV import and parsing  
+- [x] Preprocessing operations  
+- [x] Apriori implementation  
+- [x] Eclat implementation  
+- [x] Association rule generation  
+- [x] Recommendation interface  
 
-Verified functionality:
-- [✓] CSV import and parsing
-- [✓] All preprocessing operations
-- [✓] Three algorithm implementations
-- [✓] Interactive query system
-- [✓] Performance measurement
+**Test cases include**
+- [x] Duplicate detection  
+- [x] Invalid-product removal  
+- [x] Support/confidence threshold changes  
+- [x] Recommendation accuracy  
 
-Test cases:
-- [Describe 2-3 key test scenarios]
+---
 
+### Known Limitations
 
+- CLOSET algorithm not implemented.
+- UI performance depends on Streamlit session state.
 
-#### Known Limitations
+---
 
-[List any known issues or constraints, if applicable]
+### AI Tool Usage
 
+This project used ChatGPT for step-by-step guidance in understanding the Apriori and Eclat algorithms and for assistance in drafting documentation. Claude Code was used to help debug certain implementation issues and suggest Streamlit UI components.
 
+All AI-assisted code was reviewed, rewritten where needed, and thoroughly tested to ensure full compliance with the assignment requirements.
 
-#### AI Tool Usage
+---
 
-[Required: 1 paragraph describing which AI tools you used and for what purpose]
+### References
 
-Example:
-"Used ChatGPT for explaining Eclat algorithm vertical representation and debugging file parsing errors. Used GitHub Copilot for generating UI boilerplate code. All generated code was reviewed, tested, and adapted for this specific implementation."
-
-
-
-#### References
-
-- Course lecture materials
-- [Algorithm papers or resources consulted]
-- [Library documentation links]
+- Course lecture material (Association Rule Mining)
+- Apriori and Eclat algorithm descriptions  
+- Streamlit documentation  
+- Pandas documentation  
